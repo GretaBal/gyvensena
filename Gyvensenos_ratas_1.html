@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="lt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gyvensenos ratas | Lifestyle Wheel</title>
+<style>
+  :root{
+    --bg:#EAF2F2; --card:#FFFFFF; --ink:#16323B; --muted:#5E7079;
+    --accent:#0E8A8F; --accent-deep:#0B6B6F; --accent-soft:#E6F2F1; --line:#DBE6E6; --soft:#F2F8F8;
+    --low:#C1473F; --mid:#D9A441; --high:#2E8B57;
+    --shadow:0 1px 2px rgba(20,50,59,.04);
+  }
+  *{box-sizing:border-box}
+  body{margin:0; background:var(--bg); color:var(--ink);
+    font-family:-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; line-height:1.5; padding:24px 16px}
+  .wrap{max-width:940px; margin:0 auto}
+
+  header{display:flex; align-items:flex-start; justify-content:space-between; gap:16px}
+  .eyebrow{font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--accent-deep); font-weight:700}
+  h1{font-size:25px; margin:6px 0 2px; letter-spacing:-.01em}
+  .sub{color:var(--muted); font-size:14px; margin:0 0 18px; max-width:640px}
+
+  .lang-toggle{display:flex; border:1px solid var(--line); border-radius:999px; overflow:hidden; background:var(--card); box-shadow:var(--shadow); flex:0 0 auto; margin-top:4px}
+  .lang-toggle button{border:0; background:transparent; padding:7px 16px; font:inherit; font-weight:700; font-size:13px; color:var(--muted); cursor:pointer}
+  .lang-toggle button.active{background:var(--accent); color:#fff}
+  .lang-toggle button:focus-visible{outline:2px solid var(--accent-deep); outline-offset:-2px}
+
+  .layout{display:grid; grid-template-columns:1fr 1fr; gap:18px; align-items:start}
+  .card{background:var(--card); border:1px solid var(--line); border-radius:16px; padding:20px; box-shadow:var(--shadow)}
+  h2{font-size:13px; letter-spacing:.08em; text-transform:uppercase; color:var(--accent-deep); margin:0 0 14px; font-weight:700}
+
+  .domain{margin-bottom:20px}
+  .domain:last-child{margin-bottom:4px}
+  .domain-head{display:flex; justify-content:space-between; align-items:baseline; margin-bottom:4px}
+  .domain-name{font-weight:700; font-size:14.5px}
+  .domain-val{font-weight:800; font-size:16px; color:var(--accent-deep); min-width:28px; text-align:right}
+  .domain-q{font-size:12.5px; color:var(--muted); margin:0 0 8px; font-style:italic}
+  input[type=range]{width:100%; height:6px; border-radius:999px; appearance:none; background:linear-gradient(90deg,var(--low),var(--mid) 50%,var(--high)); outline:none}
+  input[type=range]::-webkit-slider-thumb{appearance:none; width:20px; height:20px; border-radius:50%; background:#fff; border:3px solid var(--accent-deep); cursor:pointer; box-shadow:0 1px 3px rgba(0,0,0,.25)}
+  input[type=range]::-moz-range-thumb{width:20px; height:20px; border-radius:50%; background:#fff; border:3px solid var(--accent-deep); cursor:pointer}
+  .scale{display:flex; justify-content:space-between; font-size:10.5px; color:#9AA7AD; margin-top:2px}
+
+  .chartCard{position:sticky; top:16px; text-align:center}
+  svg{width:100%; height:auto; max-width:440px; touch-action:none; -webkit-tap-highlight-color:transparent}
+  .dlabel{font-size:12.5px; fill:var(--ink); font-weight:700; user-select:none}
+  .handle{cursor:grab}
+  .handle:hover .dotVisible{stroke-width:3}
+  .handle.dragging{cursor:grabbing}
+  .handle.dragging .dotVisible{r:8}
+  .handle:focus{outline:none}
+  .handle:focus-visible .dotHit{stroke:var(--accent-deep); stroke-width:2; fill:rgba(14,138,143,.12)}
+  .dotHit{fill:transparent}
+  .dragValueLabel{font-size:14px; font-weight:800; fill:var(--accent-deep); paint-order:stroke; stroke:#fff; stroke-width:4; opacity:0; pointer-events:none}
+  .dragHint{font-size:12px; color:var(--muted); margin-top:10px}
+
+  .priority{margin-top:14px; background:var(--soft); border:1px dashed var(--accent); border-radius:12px; padding:13px 15px; font-size:14px; text-align:left}
+  .priority .tag{font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--accent-deep); font-weight:700; display:block; margin-bottom:4px}
+  .avg{display:flex; gap:10px; margin-top:12px}
+  .avgchip{flex:1; background:var(--soft); border-radius:10px; padding:8px 10px; text-align:center}
+  .avgchip b{display:block; font-size:18px; color:var(--accent-deep)}
+  .avgchip span{font-size:11px; color:var(--muted)}
+
+  .resetBtn{margin-top:14px; font:inherit; font-weight:600; font-size:13px; padding:9px 14px; border:1px solid var(--line); color:var(--muted); background:#fff; border-radius:9px; cursor:pointer}
+  .resetBtn:hover{border-color:var(--accent); color:var(--accent-deep)}
+  .resetBtn:focus-visible{outline:2px solid var(--accent-deep)}
+
+  .howto{font-size:12.5px; color:var(--muted); margin-top:16px; padding-top:14px; border-top:1px solid var(--line)}
+  .howto b{color:var(--ink)}
+  footer.legal{color:var(--muted); font-size:11.5px; margin-top:10px}
+  footer.legal p{margin:3px 0}
+
+  @media(max-width:760px){
+    .layout{grid-template-columns:1fr}
+    .chartCard{position:static}
+    header{flex-direction:column}
+  }
+  @media print{
+    .lang-toggle,.resetBtn,.dragHint{display:none!important}
+    body{background:#fff}
+    .card{box-shadow:none; border-color:#bbb}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <div class="eyebrow" data-i18n="eyebrow"></div>
+      <h1 data-i18n="title"></h1>
+      <p class="sub" data-i18n="subtitle"></p>
+    </div>
+    <div class="lang-toggle" role="group" aria-label="Kalba / Language">
+      <button id="btn-lt" onclick="setLang('lt')">LT</button>
+      <button id="btn-en" onclick="setLang('en')">EN</button>
+    </div>
+  </header>
+
+  <div class="layout">
+    <div class="card">
+      <h2 data-i18n="assessmentHeader"></h2>
+      <div id="domains"></div>
+    </div>
+
+    <div class="card chartCard">
+      <h2 style="text-align:left" data-i18n="wheelHeader"></h2>
+      <svg id="wheel" viewBox="0 0 400 420" aria-label="Gyvensenos ratas"></svg>
+      <p class="dragHint" data-i18n="dragHint"></p>
+      <div class="avg" id="avgBox"></div>
+      <div class="priority" id="priorityBox"></div>
+      <button class="resetBtn" id="resetBtn" data-i18n="resetBtn"></button>
+    </div>
+  </div>
+
+  <p class="howto"><b data-i18n="howtoLabel"></b> <span data-i18n="howtoText"></span></p>
+  <footer class="legal">
+    <p data-i18n="source"></p>
+    <p data-i18n="disclaimer"></p>
+  </footer>
+</div>
+
+<script>
+/* ============ I18N ============ */
+const i18n = {
+  lt: {
+    eyebrow:"Gyvensenos medicina · vizualus konsultacijos įrankis",
+    title:"Gyvensenos ratas",
+    subtitle:"Paprašykite paciento kiekvieną sritį įvertinti nuo 0 (labai prastai) iki 10 (puikiai). Rezultatas vizualiai parodo disbalansą ir padeda natūraliai pereiti prie SMART tikslo.",
+    assessmentHeader:"Vertinimas",
+    wheelHeader:"Gyvensenos ratas",
+    dragHint:"Patarimas: taškus rate galite tempti tiesiai pele arba pirštu — nebūtina naudoti šliaužiklių.",
+    resetBtn:"Atstatyti (5/10 visur)",
+    avgLabel:"vidurkis", minLabel:"žemiausias", maxLabel:"aukščiausias",
+    priorityTag:"Prioritetinė sritis šiandien",
+    priorityJoin:" ir ",
+    priorityText:(min)=>`(${min}/10). Verta pradėti pokalbį ir SMART tikslą būtent čia.`,
+    howtoLabel:"Kaip naudoti:",
+    howtoText:"rodykite ekraną pacientui pildydami kartu balsu. Po vertinimo aptarkite: „Kuri sritis nustebino labiausiai?“, „Kur norėtumėte, kad balas būtų po 3 mėnesių?“. Mažiausiai įvertinta sritis – geras atspirties taškas SMART tikslui.",
+    source:"Metodas: Wheel of Life vizualaus savęs vertinimo adaptacija gyvensenos medicinos konsultacijai.",
+    disclaimer:"Šis įrankis yra pagalbinė priemonė ir nepakeičia gydytojo konsultacijos.",
+    domains:[
+      {key:"mityba", name:"Mityba", q:"Kaip vertinate savo mitybos įpročius pastarąjį mėnesį?"},
+      {key:"fa", name:"Fizinis aktyvumas", q:"Kiek esate fiziškai aktyvus / aktyvi kasdieniame gyvenime?"},
+      {key:"miegas", name:"Miegas", q:"Kaip vertinate savo miego kokybę ir trukmę?"},
+      {key:"zalingi", name:"Žalingų įpročių kontrolė", q:"Kiek gerai kontroliuojate žalingus įpročius (rūkymą, alkoholį ir pan.)?"},
+      {key:"psichika", name:"Psichikos gerovė", q:"Kaip vertinate emocinę savijautą ir gebėjimą valdyti stresą?"}
+    ]
+  },
+  en:{
+    eyebrow:"Lifestyle Medicine · visual consultation tool",
+    title:"Lifestyle Wheel",
+    subtitle:"Ask the patient to rate each domain from 0 (very poor) to 10 (excellent). The result visually shows imbalance and helps transition naturally into a SMART goal.",
+    assessmentHeader:"Assessment",
+    wheelHeader:"Lifestyle Wheel",
+    dragHint:"Tip: you can drag the points on the wheel directly with your mouse or finger — the sliders are optional.",
+    resetBtn:"Reset (5/10 everywhere)",
+    avgLabel:"average", minLabel:"lowest", maxLabel:"highest",
+    priorityTag:"Today's priority domain",
+    priorityJoin:" and ",
+    priorityText:(min)=>`(${min}/10). This is a good place to start the conversation and set a SMART goal.`,
+    howtoLabel:"How to use:",
+    howtoText:"show the screen to the patient while filling it in together out loud. Afterwards, discuss: \u201cWhich domain surprised you most?\u201d, \u201cWhere would you like this score to be in 3 months?\u201d The lowest-scoring domain is a good starting point for a SMART goal.",
+    source:"Method: Wheel of Life visual self-assessment, adapted for lifestyle medicine consultations.",
+    disclaimer:"This tool is a supportive aid and does not replace a medical consultation.",
+    domains:[
+      {key:"mityba", name:"Nutrition", q:"How would you rate your eating habits over the past month?"},
+      {key:"fa", name:"Physical activity", q:"How physically active are you in daily life?"},
+      {key:"miegas", name:"Sleep", q:"How would you rate your sleep quality and duration?"},
+      {key:"zalingi", name:"Substance use control", q:"How well do you control harmful habits (smoking, alcohol, etc.)?"},
+      {key:"psichika", name:"Mental wellbeing", q:"How would you rate your emotional wellbeing and stress management?"}
+    ]
+  }
+};
+
+let lang = 'lt';
+const domainKeys = i18n.lt.domains.map(d=>d.key);
+const values = {}; domainKeys.forEach(k=>values[k]=5);
+
+function t(key){ return i18n[lang][key]; }
+function currentDomains(){ return i18n[lang].domains; }
+function domainByKey(key){ return currentDomains().find(d=>d.key===key); }
+
+/* ============ GEOMETRY ============ */
+const NS = "http://www.w3.org/2000/svg";
+const CX=200, CY=200, RMAX=150;
+const axisVectors = domainKeys.map((k,i)=>{
+  const angle=(-90 + i*72) * Math.PI/180;
+  return {ux:Math.cos(angle), uy:Math.sin(angle), angle};
+});
+function ptRaw(r,i){ const a=axisVectors[i]; return [CX + r*a.ux, CY + r*a.uy]; }
+function ptForValue(value,i){ return ptRaw((value/10)*RMAX, i); }
+function polyStr(pts){ return pts.map(p=>p[0].toFixed(1)+","+p[1].toFixed(1)).join(" "); }
+function colorForValue(v){ return v<=3 ? "var(--low)" : v<=6 ? "var(--mid)" : "var(--high)"; }
+
+const svg = document.getElementById("wheel");
+let dataPolyEl, handles = {}, dragLabelEl, labelEls = {};
+let draggingKey = null;
+
+/* ============ BUILD STATIC SKELETON (once) ============ */
+function buildSkeleton(){
+  svg.innerHTML = "";
+  const g = document.createElementNS(NS,"g");
+
+  // grid rings
+  [2,4,6,8,10].forEach(level=>{
+    const pts = domainKeys.map((k,i)=> ptRaw((level/10)*RMAX, i));
+    const poly = document.createElementNS(NS,"polygon");
+    poly.setAttribute("points", polyStr(pts));
+    poly.setAttribute("fill","none");
+    poly.setAttribute("stroke", level===10 ? "#B9C7C7" : "#DCE7E7");
+    poly.setAttribute("stroke-width","1");
+    g.appendChild(poly);
+  });
+
+  // axes
+  domainKeys.forEach((k,i)=>{
+    const [x,y] = ptRaw(RMAX,i);
+    const line = document.createElementNS(NS,"line");
+    line.setAttribute("x1",CX); line.setAttribute("y1",CY);
+    line.setAttribute("x2",x); line.setAttribute("y2",y);
+    line.setAttribute("stroke","#DCE7E7"); line.setAttribute("stroke-width","1");
+    g.appendChild(line);
+  });
+
+  // data polygon (updated in place, never recreated)
+  dataPolyEl = document.createElementNS(NS,"polygon");
+  dataPolyEl.setAttribute("fill","rgba(14,138,143,0.22)");
+  dataPolyEl.setAttribute("stroke","#0E8A8F");
+  dataPolyEl.setAttribute("stroke-width","2.5");
+  dataPolyEl.setAttribute("stroke-linejoin","round");
+  g.appendChild(dataPolyEl);
+
+  // domain labels (text content refreshed on language change, not recreated)
+  domainKeys.forEach((k,i)=>{
+    const a = axisVectors[i];
+    const [lx,ly] = ptRaw(RMAX+34, i);
+    const anchor = a.ux > 0.3 ? "start" : a.ux < -0.3 ? "end" : "middle";
+    const label = document.createElementNS(NS,"text");
+    label.setAttribute("x", lx);
+    label.setAttribute("class","dlabel");
+    label.dataset.dy = a.uy < -0.5 ? -4 : a.uy > 0.5 ? 10 : 4;
+    label.setAttribute("y", ly + parseFloat(label.dataset.dy));
+    label.setAttribute("text-anchor", anchor);
+    g.appendChild(label);
+    labelEls[k] = {el:label, lx, ly, dy:parseFloat(label.dataset.dy)};
+  });
+
+  // draggable handles (created once, positions/values updated in place)
+  domainKeys.forEach((k,i)=>{
+    const handle = document.createElementNS(NS,"g");
+    handle.setAttribute("class","handle");
+    handle.setAttribute("tabindex","0");
+    handle.setAttribute("role","slider");
+    handle.setAttribute("aria-valuemin","0");
+    handle.setAttribute("aria-valuemax","10");
+
+    const hit = document.createElementNS(NS,"circle");
+    hit.setAttribute("class","dotHit");
+    hit.setAttribute("r","18");
+    handle.appendChild(hit);
+
+    const dot = document.createElementNS(NS,"circle");
+    dot.setAttribute("class","dotVisible");
+    dot.setAttribute("r","6");
+    dot.setAttribute("stroke","#fff");
+    dot.setAttribute("stroke-width","2");
+    handle.appendChild(dot);
+
+    handle.addEventListener("pointerdown", (e)=> startDrag(e,k,i,handle));
+    handle.addEventListener("pointermove", (e)=> moveDrag(e,k,i));
+    handle.addEventListener("pointerup", (e)=> endDrag(e,k,handle));
+    handle.addEventListener("pointercancel", (e)=> endDrag(e,k,handle));
+    handle.addEventListener("keydown", (e)=> handleKey(e,k));
+
+    g.appendChild(handle);
+    handles[k] = {group:handle, dot};
+  });
+
+  // floating value label shown while dragging
+  dragLabelEl = document.createElementNS(NS,"text");
+  dragLabelEl.setAttribute("class","dragValueLabel");
+  dragLabelEl.setAttribute("text-anchor","middle");
+  g.appendChild(dragLabelEl);
+
+  svg.appendChild(g);
+}
+
+/* ============ DRAG INTERACTION ============ */
+function svgPoint(evt){
+  const pt = svg.createSVGPoint();
+  pt.x = evt.clientX; pt.y = evt.clientY;
+  return pt.matrixTransform(svg.getScreenCTM().inverse());
+}
+function valueFromEvent(evt,i){
+  const p = svgPoint(evt);
+  const a = axisVectors[i];
+  const dx = p.x - CX, dy = p.y - CY;
+  let radial = dx*a.ux + dy*a.uy;
+  radial = Math.max(0, Math.min(RMAX, radial));
+  return Math.round((radial/RMAX)*10);
+}
+function startDrag(e,key,i,handle){
+  e.preventDefault();
+  handle.setPointerCapture(e.pointerId);
+  draggingKey = key;
+  handle.classList.add("dragging");
+  setValue(key, valueFromEvent(e,i));
+  render();
+}
+function moveDrag(e,key,i){
+  if(draggingKey !== key) return;
+  setValue(key, valueFromEvent(e,i));
+  render();
+}
+function endDrag(e,key,handle){
+  if(draggingKey !== key) return;
+  draggingKey = null;
+  handle.classList.remove("dragging");
+  try{ handle.releasePointerCapture(e.pointerId); }catch(err){}
+  render();
+}
+function handleKey(e,key){
+  const step = (e.key==="ArrowUp"||e.key==="ArrowRight") ? 1
+             : (e.key==="ArrowDown"||e.key==="ArrowLeft") ? -1 : 0;
+  if(e.key==="Home"){ e.preventDefault(); setValue(key,0); render(); return; }
+  if(e.key==="End"){ e.preventDefault(); setValue(key,10); render(); return; }
+  if(step===0) return;
+  e.preventDefault();
+  setValue(key, Math.max(0, Math.min(10, values[key]+step)));
+  render();
+}
+
+/* ============ STATE + RENDER ============ */
+function setValue(key, v){
+  v = Math.max(0, Math.min(10, v));
+  values[key] = v;
+  document.getElementById("range-"+key).value = v;
+  document.getElementById("val-"+key).textContent = v;
+}
+
+function updateWheelVisuals(){
+  // data polygon
+  const pts = domainKeys.map((k,i)=> ptForValue(values[k], i));
+  dataPolyEl.setAttribute("points", polyStr(pts));
+
+  // handles
+  domainKeys.forEach((k,i)=>{
+    const [x,y] = ptForValue(values[k], i);
+    const h = handles[k];
+    h.group.setAttribute("transform", `translate(${x.toFixed(1)},${y.toFixed(1)})`);
+    h.dot.setAttribute("fill", colorForValue(values[k]));
+    h.group.setAttribute("aria-valuenow", values[k]);
+    h.group.setAttribute("aria-label", domainByKey(k).name + ": " + values[k] + "/10");
+  });
+
+  // floating drag value bubble
+  if(draggingKey){
+    const i = domainKeys.indexOf(draggingKey);
+    const [x,y] = ptForValue(values[draggingKey], i);
+    dragLabelEl.setAttribute("x", x);
+    dragLabelEl.setAttribute("y", y - 16);
+    dragLabelEl.textContent = values[draggingKey];
+    dragLabelEl.style.opacity = 1;
+  } else {
+    dragLabelEl.style.opacity = 0;
+  }
+}
+
+function renderLabelsText(){
+  currentDomains().forEach(d=>{
+    const L = labelEls[d.key];
+    L.el.textContent = "";
+    const words = d.name.split(" ");
+    if(words.length>1 && d.name.length>14){
+      const mid = Math.ceil(words.length/2);
+      const l1 = words.slice(0,mid).join(" "), l2 = words.slice(mid).join(" ");
+      const t1=document.createElementNS(NS,"tspan"); t1.setAttribute("x",L.lx); t1.setAttribute("dy","0"); t1.textContent=l1;
+      const t2=document.createElementNS(NS,"tspan"); t2.setAttribute("x",L.lx); t2.setAttribute("dy","14"); t2.textContent=l2;
+      L.el.appendChild(t1); L.el.appendChild(t2);
+    } else {
+      L.el.textContent = d.name;
+    }
+  });
+}
+
+function renderDomainCards(){
+  const domainsEl = document.getElementById("domains");
+  domainsEl.innerHTML = "";
+  currentDomains().forEach(d=>{
+    const div = document.createElement("div");
+    div.className = "domain";
+    div.innerHTML = `
+      <div class="domain-head"><span class="domain-name">${d.name}</span><span class="domain-val" id="val-${d.key}">${values[d.key]}</span></div>
+      <p class="domain-q">${d.q}</p>
+      <input type="range" min="0" max="10" step="1" value="${values[d.key]}" id="range-${d.key}" aria-label="${d.name}">
+      <div class="scale"><span>0</span><span>5</span><span>10</span></div>
+    `;
+    domainsEl.appendChild(div);
+  });
+  domainKeys.forEach(k=>{
+    document.getElementById("range-"+k).addEventListener("input", e=>{
+      setValue(k, parseInt(e.target.value,10));
+      render();
+    });
+  });
+}
+
+function render(){
+  updateWheelVisuals();
+
+  const vals = domainKeys.map(k=>values[k]);
+  const avg = vals.reduce((a,b)=>a+b,0)/vals.length;
+  const min = Math.min(...vals);
+  const max = Math.max(...vals);
+  document.getElementById("avgBox").innerHTML = `
+    <div class="avgchip"><b>${avg.toFixed(1)}</b><span>${t('avgLabel')}</span></div>
+    <div class="avgchip"><b>${min}</b><span>${t('minLabel')}</span></div>
+    <div class="avgchip"><b>${max}</b><span>${t('maxLabel')}</span></div>
+  `;
+  const lowestNames = currentDomains().filter(d=>values[d.key]===min).map(d=>d.name);
+  document.getElementById("priorityBox").innerHTML = `
+    <span class="tag">${t('priorityTag')}</span>
+    ${lowestNames.join(t('priorityJoin'))} ${t('priorityText')(min)}
+  `;
+}
+
+/* ============ LANGUAGE ============ */
+function setLang(l){
+  lang = l;
+  document.documentElement.lang = l;
+  document.getElementById('btn-lt').classList.toggle('active', l==='lt');
+  document.getElementById('btn-en').classList.toggle('active', l==='en');
+  document.querySelectorAll('[data-i18n]').forEach(el=>{ el.textContent = t(el.dataset.i18n); });
+  renderLabelsText();
+  renderDomainCards();
+  render();
+}
+
+/* ============ RESET ============ */
+document.getElementById("resetBtn").addEventListener("click", ()=>{
+  domainKeys.forEach(k=> values[k]=5);
+  renderDomainCards();
+  render();
+});
+
+/* ============ INIT ============ */
+buildSkeleton();
+setLang('lt');
+</script>
+</body>
+</html>
